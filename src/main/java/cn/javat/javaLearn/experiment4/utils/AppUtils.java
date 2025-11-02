@@ -1,4 +1,4 @@
-package cn.javat.javaLearn.experiment4.Utils;
+package cn.javat.javaLearn.experiment4.utils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

@@ -4,8 +4,8 @@ import cn.javat.javaLearn.experiment4.dao.VehicleDao;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.CommercialVehicleEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.PassengerVehicleEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.VehicleEntity;
-import cn.javat.javaLearn.experiment4.Utils.AppUtils;
-import cn.javat.javaLearn.experiment4.Utils.DBUtils;
+import cn.javat.javaLearn.experiment4.utils.AppUtils;
+import cn.javat.javaLearn.experiment4.utils.DBUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,9 +40,9 @@ public class VehicleDaoImpl implements VehicleDao {
 
             // 根据不同类型插入到对应的详细表
             if (vehicle instanceof PassengerVehicleEntity) {
-                insertPassengerVehicleDetails((PassengerVehicleEntity) vehicle);
+                result = insertPassengerVehicleDetails((PassengerVehicleEntity) vehicle);
             } else if (vehicle instanceof CommercialVehicleEntity) {
-                insertCommercialVehicleDetails((CommercialVehicleEntity) vehicle);
+                result = insertCommercialVehicleDetails((CommercialVehicleEntity) vehicle);
             }
 
             return result;

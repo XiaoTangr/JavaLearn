@@ -1,16 +1,16 @@
-package cn.javat.javaLearn.experiment4.Service.Impl;
+package cn.javat.javaLearn.experiment4.service.Impl;
 
 
 import cn.javat.javaLearn.experiment4.dao.Impl.OrderDaoImpl;
 import cn.javat.javaLearn.experiment4.entity.OrderEntity;
-import cn.javat.javaLearn.experiment4.Service.OrderService;
+import cn.javat.javaLearn.experiment4.service.OrderService;
 
 import java.util.ArrayList;
 
 public class OrderServiceImpl implements OrderService {
-    
+
     private final OrderDaoImpl orderDao = new OrderDaoImpl();
-    
+
     /**
      * 根据用户ID查询订单
      *
@@ -77,5 +77,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ArrayList<OrderEntity> selectAll() {
         return orderDao.selectAll();
+    }
+
+    /**
+     * 根据车辆ID查询订单
+     *
+     * @param vehicleId 车辆ID
+     * @return 订单列表
+     */
+    @Override
+    public ArrayList<OrderEntity> selectByVehicleId(long vehicleId) {
+        return orderDao.selectByVehicleId(vehicleId);
     }
 }

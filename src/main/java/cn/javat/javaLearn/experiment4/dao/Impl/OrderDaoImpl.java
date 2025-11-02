@@ -2,8 +2,8 @@ package cn.javat.javaLearn.experiment4.dao.Impl;
 
 import cn.javat.javaLearn.experiment4.dao.OrderDao;
 import cn.javat.javaLearn.experiment4.entity.OrderEntity;
-import cn.javat.javaLearn.experiment4.Utils.AppUtils;
-import cn.javat.javaLearn.experiment4.Utils.DBUtils;
+import cn.javat.javaLearn.experiment4.utils.AppUtils;
+import cn.javat.javaLearn.experiment4.utils.DBUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,9 +36,9 @@ public class OrderDaoImpl implements OrderDao {
             preparedStatement.setInt(3, order.getBuyCount());
             preparedStatement.setDouble(4, order.getTotalPrice());
             preparedStatement.setLong(5, order.getCreateTime());
-            
+
             int result = preparedStatement.executeUpdate();
-            
+
             // 获取生成的主键
             if (result > 0) {
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
@@ -47,10 +47,10 @@ public class OrderDaoImpl implements OrderDao {
                     }
                 }
             }
-            
+
             return result;
         } catch (SQLException e) {
-            AppUtils.print("插入订单信息失败: " + e.toString());
+            AppUtils.print("插入订单信息失败: " + e);
             return -1;
         }
     }
@@ -67,7 +67,7 @@ public class OrderDaoImpl implements OrderDao {
             preparedStatement.setLong(6, order.getOrderId());
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("更新订单信息失败: " + e.toString());
+            AppUtils.print("更新订单信息失败: " + e);
             return -1;
         }
     }
@@ -79,7 +79,7 @@ public class OrderDaoImpl implements OrderDao {
             preparedStatement.setLong(1, pk);
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("删除订单信息失败: " + e.toString());
+            AppUtils.print("删除订单信息失败: " + e);
             return -1;
         }
     }
@@ -102,7 +102,7 @@ public class OrderDaoImpl implements OrderDao {
                 }
             }
         } catch (SQLException e) {
-            AppUtils.print("查询订单信息失败: " + e.toString());
+            AppUtils.print("查询订单信息失败: " + e);
         }
         return null;
     }
@@ -125,11 +125,11 @@ public class OrderDaoImpl implements OrderDao {
                 orders.add(order);
             }
         } catch (SQLException e) {
-            AppUtils.print("查询所有订单信息失败: " + e.toString());
+            AppUtils.print("查询所有订单信息失败: " + e);
         }
         return orders;
     }
-    
+
     /**
      * 根据用户ID查询订单
      *
@@ -156,7 +156,32 @@ public class OrderDaoImpl implements OrderDao {
                 }
             }
         } catch (SQLException e) {
-            AppUtils.print("根据用户ID查询订单信息失败: " + e.toString());
+            AppUtils.print("根据用户ID查询订单信息失败: " + e);
+        }
+        return orders;
+    }
+
+    @Override
+    public ArrayList<OrderEntity> selectByVehicleId(long vehicleId) {
+        ArrayList<OrderEntity> orders = new ArrayList<>();
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE vehicle_id=?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, vehicleId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    OrderEntity order = new OrderEntity(
+                            resultSet.getLong("order_id"),
+                            resultSet.getLong("user_id"),
+                            resultSet.getLong("vehicle_id"),
+                            resultSet.getInt("buy_count"),
+                            resultSet.getDouble("total_price"),
+                            resultSet.getLong("create_time")
+                    );
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            AppUtils.print("根据车辆ID查询订单信息失败: " + e);
         }
         return orders;
     }

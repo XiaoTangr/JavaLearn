@@ -1,4 +1,4 @@
-package cn.javat.javaLearn.experiment4.Service;
+package cn.javat.javaLearn.experiment4.service;
 
 import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 
@@ -52,4 +52,12 @@ public interface OrderService {
      * @return 所有订单
      */
     ArrayList<OrderEntity> selectAll();
+
+    /**
+     * 根据车辆ID查询订单
+     *
+     * @param vehicleId 车辆ID
+     * @return 订单列表
+     */
+    ArrayList<OrderEntity> selectByVehicleId(long vehicleId);
 };

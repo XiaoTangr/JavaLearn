@@ -1,5 +1,6 @@
-package cn.javat.javaLearn.experiment4.Service;
+package cn.javat.javaLearn.experiment4.service;
 
+import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.VehicleEntity;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public interface VehicleService {
      * @param carId 车辆ID
      * @return 车辆
      */
-    VehicleEntity selectVehicle(int carId);
+    VehicleEntity selectVehicle(long carId);
 
     /**
      * 获取车辆数量
@@ -37,17 +38,18 @@ public interface VehicleService {
     int updateVehicle(VehicleEntity vehicle);
 
     /**
-     * 获取车辆数量
-     *
-     * @return 数量
-     */
-    int getDataCount();
-
-    /**
      * 删除车辆
      *
      * @param carId 车辆ID
      * @return 0: 删除成功 -1: 删除失败
      */
-    int DeleteVehicle(int carId);
+    int DeleteVehicle(long carId);
+
+    /**
+     * 购买车辆
+     *
+     * @param order 订单
+     * @return 0: 购买成功 -1: 车辆不存在 -2：用户不存在 -3: 库存不足
+     */
+    int buyVehicle(OrderEntity order);
 }

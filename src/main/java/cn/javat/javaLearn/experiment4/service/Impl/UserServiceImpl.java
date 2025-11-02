@@ -1,13 +1,13 @@
-package cn.javat.javaLearn.experiment4.Service.Impl;
+package cn.javat.javaLearn.experiment4.service.Impl;
 
 import cn.javat.javaLearn.experiment4.dao.Impl.UserDaoImpl;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
-import cn.javat.javaLearn.experiment4.Service.UserService;
+import cn.javat.javaLearn.experiment4.service.UserService;
 
 import java.util.ArrayList;
 
 public class UserServiceImpl implements UserService {
-    
+
     private final UserDaoImpl userDao = new UserDaoImpl();
 
     /**
@@ -24,10 +24,10 @@ public class UserServiceImpl implements UserService {
             // 邮箱已存在，注册失败
             return null;
         }
-        
+
         // 设置默认状态为激活
         user.setActive(true);
-        
+
         // 插入新用户
         int result = userDao.insert(user);
         if (result > 0) {
@@ -54,17 +54,17 @@ public class UserServiceImpl implements UserService {
             // 账号不存在
             return -2;
         }
-        
+
         if (!user.isActive()) {
             // 账号被禁用
             return -3;
         }
-        
+
         if (!user.getPassWord().equals(userPassword)) {
             // 账号密码错误
             return -1;
         }
-        
+
         // 登录成功，返回用户对象
         return user;
     }
@@ -88,5 +88,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public ArrayList<UserEntity> selectAllUser() {
         return userDao.selectAll();
+    }
+
+    /**
+     * 修改用户信息
+     *
+     * @param user 用户
+     * @return 修改结果 0 失败 1 成功
+     */
+    @Override
+    public int updateUser(UserEntity user) {
+        return userDao.update(user);
     }
 }

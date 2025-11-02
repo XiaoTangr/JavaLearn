@@ -1,4 +1,4 @@
-package cn.javat.javaLearn.experiment4.Service;
+package cn.javat.javaLearn.experiment4.service;
 
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
 
@@ -36,6 +36,14 @@ public interface UserService {
      * @return 所有用户
      */
     ArrayList<UserEntity> selectAllUser();
+
+    /**
+     * 修改用户
+     *
+     * @param user 用户
+     * @return 修改成功 0 修改失败 -1
+     */
+    int updateUser(UserEntity user);
 
 
 }

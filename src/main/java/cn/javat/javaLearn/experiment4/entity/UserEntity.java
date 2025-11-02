@@ -17,7 +17,8 @@ public class UserEntity {
 
     @Override
     public String toString() {
-        return String.format("<%s> 用户名：%s 状态：%s",
+        return String.format("<%s> 邮箱：%s 用户名：%s 状态：%s",
+                getUserId(),
                 getUserEmail(),
                 getUserName(),
                 isActive() ? "正常" : "禁用");

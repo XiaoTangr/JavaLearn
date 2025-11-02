@@ -16,4 +16,6 @@ public interface OrderDao {
     ArrayList<OrderEntity> selectAll();
     
     ArrayList<OrderEntity> selectByUserId(long userId);
+
+    ArrayList<OrderEntity> selectByVehicleId(long vehicleId);
 }
