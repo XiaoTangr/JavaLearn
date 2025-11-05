@@ -20,6 +20,23 @@ public class VehicleServiceImpl implements VehicleService {
     private final UserDao userDao = new UserDaoImpl();
     private final OrderDao orderDao = new OrderDaoImpl();
 
+    // 使用 volatile 关键字确保多线程环境下的可见性
+    private static volatile VehicleServiceImpl instance;
+
+    public VehicleServiceImpl() {
+    }
+
+    public static VehicleServiceImpl getInstance() {
+        if (instance == null) {
+            synchronized (VehicleServiceImpl.class) {
+                if (instance == null) {
+                    instance = new VehicleServiceImpl();
+                }
+            }
+        }
+        return instance;
+    }
+
     /**
      * 查询车辆
      *

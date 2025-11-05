@@ -7,13 +7,14 @@ import java.io.IOException;
 public class AppUtils {
     //    打印单行分割线
     public static void printLine() {
-        System.out.println("——————————————————————————");
+        System.out.println("———————————————————————————————————————————————————————————————————");
 
     }
 
     //    打印双行分割线
     public static void printDoubleLine() {
-        System.out.println("==========================");
+        System.out.println("===================================================================");
+
     }
 
     // 无参数版本 - 实现可选参数效果

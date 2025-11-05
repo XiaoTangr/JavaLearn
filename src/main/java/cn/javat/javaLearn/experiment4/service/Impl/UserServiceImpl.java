@@ -9,6 +9,23 @@ import java.util.ArrayList;
 public class UserServiceImpl implements UserService {
 
     private final UserDaoImpl userDao = new UserDaoImpl();
+    // 使用 volatile 关键字确保多线程环境下的可见性
+    private static volatile UserServiceImpl instance;
+
+    private UserServiceImpl() {
+    }
+
+    public static UserServiceImpl getInstance() {
+        // 双重检查锁定模式
+        if (instance == null) {
+            synchronized (UserServiceImpl.class) {
+                if (instance == null) {
+                    instance = new UserServiceImpl();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * 注册

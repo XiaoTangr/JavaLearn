@@ -1,44 +1,29 @@
 package cn.javat.javaLearn.experiment4.controller.Impl;
 
-import cn.javat.javaLearn.experiment4.config.ServiceFactory;
+import cn.javat.javaLearn.experiment4.config.AppConfig;
 import cn.javat.javaLearn.experiment4.controller.UserController;
 import cn.javat.javaLearn.experiment4.controller.VehicleController;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
-import cn.javat.javaLearn.experiment4.service.UserService;
 import cn.javat.javaLearn.experiment4.service.Impl.UserServiceImpl;
-import cn.javat.javaLearn.experiment4.service.VehicleService;
+import cn.javat.javaLearn.experiment4.service.UserService;
 import cn.javat.javaLearn.experiment4.utils.AppUtils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class UserControllerImpl implements UserController {
 
-    public static final String ADMIN_EMAIL = "admin@javat.cn";
     private UserEntity currentUser = null;
     private final Scanner scanner = new Scanner(System.in);
-    private UserService userService;
-    private VehicleController vehicleController;
+    private final UserService userService = UserServiceImpl.getInstance();
+    private final VehicleController vehicleController = new VehicleControllerImpl();
+    private final String ADMIN_EMAIL = AppConfig.getInstance().getProperty("user.admin_email");
 
-    public UserControllerImpl() {
-        this.userService = ServiceFactory.getUserService();
-    }
-
-    public UserControllerImpl(VehicleController vehicleController) {
-        this();
-        this.vehicleController = vehicleController;
-    }
-    
-    public UserControllerImpl(UserService userService, VehicleController vehicleController) {
-        this.userService = userService;
-        this.vehicleController = vehicleController;
-    }
 
     //    入口
     @Override
     public void startUp() {
-        vehicleController = new VehicleControllerImpl();
-        userService = new UserServiceImpl();
         if (currentUser != null) {
             if (Objects.equals(currentUser.getUserEmail(), ADMIN_EMAIL)) {
                 adminPanel();
@@ -139,10 +124,8 @@ public class UserControllerImpl implements UserController {
                     updateUserWithAdmin();
                     break;
                 case 3:
-                    if (vehicleController != null) {
-                        vehicleController.setCurrentUser(currentUser);
-                        vehicleController.startUp();
-                    }
+                    vehicleController.setCurrentUser(currentUser);
+                    vehicleController.startUp();
                     break;
                 case 4:
                     logout();
@@ -229,7 +212,8 @@ public class UserControllerImpl implements UserController {
     //    修改用户信息
     @Override
     public void updateUser(UserEntity user) {
-        UserEntity modifiedUser = user;
+        UserEntity modifiedUser;
+        modifiedUser = user;
         boolean finishEdit = false;
         while (!finishEdit) {
             AppUtils.printDoubleLine();

@@ -14,22 +14,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class VehicleDaoImpl implements VehicleDao {
-    private final Connection connection = new DBUtils().getConnection();
-
     @Override
     public int insert(VehicleEntity vehicle) {
-        // 首先插入到vehicles表
         String sql = "INSERT INTO vehicles (vehicle_type, vehicle_brand, vehicle_model, vehicle_price, vehicle_stock) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, vehicle.getVehicleType());
             preparedStatement.setString(2, vehicle.getVehicleBrand());
             preparedStatement.setString(3, vehicle.getVehicleModel());
             preparedStatement.setDouble(4, vehicle.getVehiclePrice());
             preparedStatement.setInt(5, vehicle.getVehicleStock());
-
             int result = preparedStatement.executeUpdate();
-
-            // 获取生成的主键
             if (result > 0) {
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -37,7 +32,6 @@ public class VehicleDaoImpl implements VehicleDao {
                     }
                 }
             }
-
             // 根据不同类型插入到对应的详细表
             if (vehicle instanceof PassengerVehicleEntity) {
                 result = insertPassengerVehicleDetails((PassengerVehicleEntity) vehicle);
@@ -47,33 +41,35 @@ public class VehicleDaoImpl implements VehicleDao {
 
             return result;
         } catch (SQLException e) {
-            AppUtils.print("插入车辆信息失败: " + e.toString());
+            AppUtils.print("插入车辆信息失败: " + e);
             return -1;
         }
     }
 
     private int insertPassengerVehicleDetails(PassengerVehicleEntity vehicle) {
         String sql = "INSERT INTO passenger_vehicles (vehicle_id, seat_count, fuel_type) VALUES (?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, vehicle.getVehicleId());
             preparedStatement.setInt(2, vehicle.getSeatCount());
             preparedStatement.setString(3, vehicle.getFuelType());
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("插入乘用车信息失败: " + e.toString());
+            AppUtils.print("插入乘用车信息失败: " + e);
             return -1;
         }
     }
 
     private int insertCommercialVehicleDetails(CommercialVehicleEntity vehicle) {
         String sql = "INSERT INTO commercial_vehicles (vehicle_id, load_capacity, cargo_volume) VALUES (?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, vehicle.getVehicleId());
             preparedStatement.setDouble(2, vehicle.getLoadCapacity());
             preparedStatement.setDouble(3, vehicle.getCargoVolume());
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("插入商用车信息失败: " + e.toString());
+            AppUtils.print("插入商用车信息失败: " + e);
             return -1;
         }
     }
@@ -81,7 +77,8 @@ public class VehicleDaoImpl implements VehicleDao {
     @Override
     public int update(VehicleEntity vehicle) {
         String sql = "UPDATE vehicles SET vehicle_type=?, vehicle_brand=?, vehicle_model=?, vehicle_price=?, vehicle_stock=? WHERE vehicle_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, vehicle.getVehicleType());
             preparedStatement.setString(2, vehicle.getVehicleBrand());
             preparedStatement.setString(3, vehicle.getVehicleModel());
@@ -100,46 +97,46 @@ public class VehicleDaoImpl implements VehicleDao {
 
             return result;
         } catch (SQLException e) {
-            AppUtils.print("更新车辆信息失败: " + e.toString());
+            AppUtils.print("更新车辆信息失败: " + e);
             return -1;
         }
     }
 
-    private int updatePassengerVehicleDetails(PassengerVehicleEntity vehicle) {
+    private void updatePassengerVehicleDetails(PassengerVehicleEntity vehicle) {
         String sql = "UPDATE passenger_vehicles SET seat_count=?, fuel_type=? WHERE vehicle_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, vehicle.getSeatCount());
             preparedStatement.setString(2, vehicle.getFuelType());
             preparedStatement.setLong(3, vehicle.getVehicleId());
-            return preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("更新乘用车信息失败: " + e.toString());
-            return -1;
+            AppUtils.print("更新乘用车信息失败: " + e);
         }
     }
 
-    private int updateCommercialVehicleDetails(CommercialVehicleEntity vehicle) {
+    private void updateCommercialVehicleDetails(CommercialVehicleEntity vehicle) {
         String sql = "UPDATE commercial_vehicles SET load_capacity=?, cargo_volume=? WHERE vehicle_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setDouble(1, vehicle.getLoadCapacity());
             preparedStatement.setDouble(2, vehicle.getCargoVolume());
             preparedStatement.setLong(3, vehicle.getVehicleId());
-            return preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("更新商用车信息失败: " + e.toString());
-            return -1;
+            AppUtils.print("更新商用车信息失败: " + e);
         }
     }
 
     @Override
     public int delete(long pk) {
-        // 由于使用了外键级联删除，只需要删除vehicles表中的记录即可
         String sql = "DELETE FROM vehicles WHERE vehicle_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, pk);
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            AppUtils.print("删除车辆信息失败: " + e.toString());
+            AppUtils.print("删除车辆信息失败: " + e);
             return -1;
         }
     }
@@ -152,7 +149,8 @@ public class VehicleDaoImpl implements VehicleDao {
                 "LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id " +
                 "WHERE v.vehicle_id=?";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, pk);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -160,10 +158,11 @@ public class VehicleDaoImpl implements VehicleDao {
                 }
             }
         } catch (SQLException e) {
-            AppUtils.print("查询车辆信息失败: " + e.toString());
+            AppUtils.print("查询车辆信息失败: " + e);
         }
         return null;
     }
+
 
     @Override
     public ArrayList<VehicleEntity> selectAll() {
@@ -173,14 +172,16 @@ public class VehicleDaoImpl implements VehicleDao {
                 "LEFT JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id " +
                 "LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 VehicleEntity vehicle = createVehicleFromResultSet(resultSet);
                 vehicles.add(vehicle);
             }
         } catch (SQLException e) {
-            AppUtils.print("查询所有车辆信息失败: " + e.toString());
+            AppUtils.print("查询所有车辆信息失败: " + e);
         }
         return vehicles;
     }
@@ -191,8 +192,9 @@ public class VehicleDaoImpl implements VehicleDao {
         String sql = "SELECT v.*, pv.seat_count, pv.fuel_type FROM vehicles v " +
                 "JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id " +
                 "WHERE v.vehicle_type='passenger'";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 PassengerVehicleEntity vehicle = PassengerVehicleEntity.builder()
                         .vehicleId(resultSet.getLong("vehicle_id"))
@@ -207,7 +209,7 @@ public class VehicleDaoImpl implements VehicleDao {
                 vehicles.add(vehicle);
             }
         } catch (SQLException e) {
-            AppUtils.print("查询所有乘用车信息失败: " + e.toString());
+            AppUtils.print("查询所有乘用车信息失败: " + e);
         }
         return vehicles;
     }
@@ -218,8 +220,9 @@ public class VehicleDaoImpl implements VehicleDao {
         String sql = "SELECT v.*, cv.load_capacity, cv.cargo_volume FROM vehicles v " +
                 "JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id " +
                 "WHERE v.vehicle_type='commercial'";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 CommercialVehicleEntity vehicle = CommercialVehicleEntity.builder()
                         .vehicleId(resultSet.getLong("vehicle_id"))
@@ -234,7 +237,7 @@ public class VehicleDaoImpl implements VehicleDao {
                 vehicles.add(vehicle);
             }
         } catch (SQLException e) {
-            AppUtils.print("查询所有商用车信息失败: " + e.toString());
+            AppUtils.print("查询所有商用车信息失败: " + e);
         }
         return vehicles;
     }

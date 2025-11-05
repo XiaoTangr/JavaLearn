@@ -1,42 +1,28 @@
 package cn.javat.javaLearn.experiment4.controller.Impl;
 
-import cn.javat.javaLearn.experiment4.config.ServiceFactory;
+import cn.javat.javaLearn.experiment4.config.AppConfig;
 import cn.javat.javaLearn.experiment4.controller.OrderController;
 import cn.javat.javaLearn.experiment4.controller.VehicleController;
+import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.CommercialVehicleEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.PassengerVehicleEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.VehicleEntity;
 import cn.javat.javaLearn.experiment4.service.Impl.VehicleServiceImpl;
-import cn.javat.javaLearn.experiment4.service.OrderService;
-import cn.javat.javaLearn.experiment4.service.UserService;
 import cn.javat.javaLearn.experiment4.service.VehicleService;
 import cn.javat.javaLearn.experiment4.utils.AppUtils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class VehicleControllerImpl implements VehicleController {
 
     private UserEntity currentUser = null;
     private final Scanner scanner = new Scanner(System.in);
-    private VehicleService vehicleService;
-    private OrderController orderController;
+    private final VehicleService vehicleService = VehicleServiceImpl.getInstance();
+    private final OrderController orderController = new OrderControllerImpl();
 
-    public VehicleControllerImpl() {
-        this.vehicleService = ServiceFactory.getVehicleService();
-        this.orderController = new OrderControllerImpl();
-    }
-
-    public VehicleControllerImpl(OrderController orderController) {
-        this.vehicleService = ServiceFactory.getVehicleService();
-        this.orderController = orderController;
-    }
-    
-    public VehicleControllerImpl(VehicleService vehicleService, OrderController orderController) {
-        this.vehicleService = vehicleService;
-        this.orderController = orderController;
-    }
 
     @Override
     public void setCurrentUser(UserEntity user) {
@@ -50,6 +36,9 @@ public class VehicleControllerImpl implements VehicleController {
 
     @Override
     public void startUp() {
+        AppConfig appConfig = new AppConfig();
+        String ADMIN_EMAIL = appConfig.getProperty("user.admin_email");
+
         if (currentUser == null) {
             AppUtils.print("请先登录！");
         }

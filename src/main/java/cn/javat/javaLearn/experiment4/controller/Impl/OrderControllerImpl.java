@@ -1,9 +1,6 @@
 package cn.javat.javaLearn.experiment4.controller.Impl;
 
-import cn.javat.javaLearn.experiment4.config.ServiceFactory;
 import cn.javat.javaLearn.experiment4.controller.OrderController;
-
-import cn.javat.javaLearn.experiment4.controller.UserController;
 import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.CommercialVehicleEntity;
@@ -19,32 +16,13 @@ import cn.javat.javaLearn.experiment4.utils.AppUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class OrderControllerImpl implements OrderController {
-    
-    private UserEntity currentUser = null;
-    private final Scanner scanner = new Scanner(System.in);
-    private OrderService orderService;
-    private UserService userService;
-    private VehicleService vehicleService;
 
-    private UserController userController;
+    private final OrderService orderService = OrderServiceImpl.getInstance();
+    private final UserService userService = UserServiceImpl.getInstance();
+    private final VehicleService vehicleService = VehicleServiceImpl.getInstance();
     
-    public OrderControllerImpl() {
-        // 使用工厂模式获取服务实例，避免重复初始化
-        this.orderService = ServiceFactory.getOrderService();
-        this.userService = ServiceFactory.getUserService();
-        this.vehicleService = ServiceFactory.getVehicleService();
-    }
-    
-    public OrderControllerImpl(OrderService orderService, UserService userService, VehicleService vehicleService) {
-        // 依赖注入构造函数，允许外部控制服务实现
-        this.orderService = orderService;
-        this.userService = userService;
-        this.vehicleService = vehicleService;
-    }
-
     @Override
     public void printOrderInline(OrderEntity order) {
         AppUtils.print(order.toString());

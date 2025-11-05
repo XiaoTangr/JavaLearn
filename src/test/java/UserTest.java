@@ -12,7 +12,7 @@ public class UserTest {
 
     @Test
     public void insetUser() {
-        UserService userService = new UserServiceImpl();
+        UserService userService = UserServiceImpl.getInstance();
         UserEntity test = new UserEntity(1, "test@test.com", "test", "test", true);
         Object res = userService.register(test);
         AppUtils.print(res.toString());
@@ -20,7 +20,7 @@ public class UserTest {
 
     @Test
     public void loginTest() {
-        UserService userService = new UserServiceImpl();
+        UserService userService = UserServiceImpl.getInstance();
         Object res = userService.login("test@test.com", "test");
         AppUtils.print(res.toString());
     }

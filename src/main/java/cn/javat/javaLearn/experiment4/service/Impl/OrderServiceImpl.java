@@ -8,8 +8,32 @@ import cn.javat.javaLearn.experiment4.service.OrderService;
 import java.util.ArrayList;
 
 public class OrderServiceImpl implements OrderService {
-
+    
+    // 使用 volatile 关键字确保多线程环境下的可见性
+    private static volatile OrderServiceImpl instance;
+    
     private final OrderDaoImpl orderDao = new OrderDaoImpl();
+
+    // 私有构造函数，防止外部直接实例化
+    private OrderServiceImpl() {
+    }
+
+    /**
+     * 获取单例实例
+     *
+     * @return OrderServiceImpl 单例实例
+     */
+    public static OrderServiceImpl getInstance() {
+        // 双重检查锁定模式
+        if (instance == null) {
+            synchronized (OrderServiceImpl.class) {
+                if (instance == null) {
+                    instance = new OrderServiceImpl();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * 根据用户ID查询订单

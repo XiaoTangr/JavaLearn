@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public class OrderDaoImpl implements OrderDao {
 
-    private final Connection connection = new DBUtils().getConnection();
     private final String TABLE_NAME = "orders";
 
     /**
@@ -25,9 +24,8 @@ public class OrderDaoImpl implements OrderDao {
     @Override
     public int insert(OrderEntity order) {
         String sql = "INSERT INTO " + TABLE_NAME + " (user_id, vehicle_id, buy_count, total_price, create_time) VALUES (?, ?, ?, ?, ?)";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            // 没有ID则设置id为当前时间戳
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             if (order.getOrderId() == 0) {
                 order.setOrderId(System.currentTimeMillis());
             }
@@ -36,10 +34,7 @@ public class OrderDaoImpl implements OrderDao {
             preparedStatement.setInt(3, order.getBuyCount());
             preparedStatement.setDouble(4, order.getTotalPrice());
             preparedStatement.setLong(5, order.getCreateTime());
-
             int result = preparedStatement.executeUpdate();
-
-            // 获取生成的主键
             if (result > 0) {
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -47,7 +42,6 @@ public class OrderDaoImpl implements OrderDao {
                     }
                 }
             }
-
             return result;
         } catch (SQLException e) {
             AppUtils.print("插入订单信息失败: " + e);
@@ -55,10 +49,17 @@ public class OrderDaoImpl implements OrderDao {
         }
     }
 
+    /**
+     * 更新订单
+     *
+     * @param order 订单
+     * @return 返回更新结果 >0:受影响的数据行数 -1: 更新失败
+     */
     @Override
     public int update(OrderEntity order) {
         String sql = "UPDATE " + TABLE_NAME + " SET user_id=?, vehicle_id=?, buy_count=?, total_price=?, create_time=? WHERE order_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, order.getUserId());
             preparedStatement.setLong(2, order.getVehicleId());
             preparedStatement.setInt(3, order.getBuyCount());
@@ -72,10 +73,17 @@ public class OrderDaoImpl implements OrderDao {
         }
     }
 
+    /**
+     * 删除订单
+     *
+     * @param pk 主键
+     * @return 删除结果 >0:受影响的数据行数 -1: 删除失败
+     */
     @Override
     public int delete(long pk) {
         String sql = "DELETE FROM " + TABLE_NAME + " WHERE order_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, pk);
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -87,32 +95,39 @@ public class OrderDaoImpl implements OrderDao {
     @Override
     public OrderEntity select(long pk) {
         String sql = "SELECT * FROM " + TABLE_NAME + " WHERE order_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, pk);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return new OrderEntity(
-                            resultSet.getLong("order_id"),
-                            resultSet.getLong("user_id"),
-                            resultSet.getLong("vehicle_id"),
-                            resultSet.getInt("buy_count"),
-                            resultSet.getDouble("total_price"),
-                            resultSet.getLong("create_time")
-                    );
-                }
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return new OrderEntity(
+                        resultSet.getLong("order_id"),
+                        resultSet.getLong("user_id"),
+                        resultSet.getLong("vehicle_id"),
+                        resultSet.getInt("buy_count"),
+                        resultSet.getDouble("total_price"),
+                        resultSet.getLong("create_time")
+                );
             }
+
         } catch (SQLException e) {
             AppUtils.print("查询订单信息失败: " + e);
         }
         return null;
     }
 
+    /**
+     * 查询所有订单
+     *
+     * @return 订单列表
+     */
     @Override
     public ArrayList<OrderEntity> selectAll() {
         ArrayList<OrderEntity> orders = new ArrayList<>();
         String sql = "SELECT * FROM " + TABLE_NAME;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 OrderEntity order = new OrderEntity(
                         resultSet.getLong("order_id"),
@@ -140,7 +155,8 @@ public class OrderDaoImpl implements OrderDao {
     public ArrayList<OrderEntity> selectByUserId(long userId) {
         ArrayList<OrderEntity> orders = new ArrayList<>();
         String sql = "SELECT * FROM " + TABLE_NAME + " WHERE user_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, userId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -165,7 +181,8 @@ public class OrderDaoImpl implements OrderDao {
     public ArrayList<OrderEntity> selectByVehicleId(long vehicleId) {
         ArrayList<OrderEntity> orders = new ArrayList<>();
         String sql = "SELECT * FROM " + TABLE_NAME + " WHERE vehicle_id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, vehicleId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
