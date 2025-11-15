@@ -6,7 +6,7 @@
 
 你需要选定一个未实现模块将其实现，完成后将模块编号填写在表格中，并提交
 
-Github：
+Github：https://github.com/XiaoTangr/JavaLearn
 
 ### 模块实现
 
