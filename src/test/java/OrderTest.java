@@ -17,6 +17,5 @@ public class OrderTest {
         order.setCreateTime(new Timestamp(System.currentTimeMillis()).getTime());
 //        orderService.insert(order);
         OrderController orderController = new OrderControllerImpl();
-        orderController.printOrder(orderService.select(1));
     }
 }

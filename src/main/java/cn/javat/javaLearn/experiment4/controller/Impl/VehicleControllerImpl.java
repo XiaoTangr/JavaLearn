@@ -1,7 +1,6 @@
 package cn.javat.javaLearn.experiment4.controller.Impl;
 
 import cn.javat.javaLearn.experiment4.config.AppConfig;
-import cn.javat.javaLearn.experiment4.controller.OrderController;
 import cn.javat.javaLearn.experiment4.controller.VehicleController;
 import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
@@ -21,8 +20,6 @@ public class VehicleControllerImpl implements VehicleController {
     private UserEntity currentUser = null;
     private final Scanner scanner = new Scanner(System.in);
     private final VehicleService vehicleService = VehicleServiceImpl.getInstance();
-    private final OrderController orderController = new OrderControllerImpl();
-
 
     @Override
     public void setCurrentUser(UserEntity user) {
@@ -60,26 +57,23 @@ public class VehicleControllerImpl implements VehicleController {
             AppUtils.printDoubleLine();
             AppUtils.print("欢迎用户：%s", currentUser.getUserName());
             AppUtils.printLine();
-            AppUtils.print("1. 购买车辆");
-            AppUtils.print("2. 查询订单");
-            AppUtils.print("3. 退出系统");
+            AppUtils.print("1. 购买车辆"); // 保留原有的购买功能作为立即购买
+            AppUtils.print("2. 搜索车辆");
+            AppUtils.print("3. 加入购物车"); // 添加加入购物车功能
+            AppUtils.print("0. 返回上级");
             switch (scanner.nextInt()) {
-                case 1:
-                    buyVehicle();
-                    break;
-                case 2:
-                    orderController.printOrdersByUserId(currentUser.getUserId());
-                    break;
-                case 3:
+                case 1 -> buyVehicle(); // 立即购买
+                case 2 -> searchVehicle();
+                case 3 -> addToCart(); // 加入购物车
+                case 0 -> {
                     currentUser = null;
                     return;
-                default:
-                    AppUtils.print("请输入正确的选项！");
+                }
+                default -> AppUtils.print("请输入正确的选项！");
             }
         }
     }
-
-    //    TODO：还未Debug
+    
     @Override
     public void buyVehicle() {
         if (currentUser == null) {
@@ -92,27 +86,77 @@ public class VehicleControllerImpl implements VehicleController {
         AppUtils.printLine();
         printAllVehicle(vehicles);
         AppUtils.printLine();
-        VehicleEntity vehicle = null;
-        AppUtils.print("请输入购买车辆ID");
-        vehicle = vehicleService.selectVehicle(scanner.nextLong());
+        VehicleEntity vehicle;
+        AppUtils.print("请输入购买车辆ID（输入0返回上级）：");
+        long vehicleId = scanner.nextLong();
+        if (vehicleId == 0) {
+            return;
+        }
+        vehicle = vehicleService.selectVehicle(vehicleId);
         while (vehicle == null) {
             AppUtils.print("车辆不存在！");
-            AppUtils.print("请输入车辆ID：");
-            vehicle = vehicleService.selectVehicle(scanner.nextLong());
+            AppUtils.print("请输入车辆ID（输入0返回上级）：");
+            vehicleId = scanner.nextLong();
+            if (vehicleId == 0) {
+                return;
+            }
+            vehicle = vehicleService.selectVehicle(vehicleId);
         }
         if (vehicle.getVehicleStock() <= 0) {
             AppUtils.print("车辆已售完！");
             return;
         }
+        
+        // 显示车辆详细信息
+        AppUtils.printDoubleLine();
+        AppUtils.print("车辆详细信息：");
+        printVehicle(vehicle);
+        AppUtils.printLine();
+        
+        // 提供操作选项
+        AppUtils.print("请选择操作：");
+        AppUtils.print("1. 立即购买");
+        AppUtils.print("2. 加入购物车");
+        AppUtils.print("0. 返回上级");
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1 -> {
+                // 继续执行购买流程
+                performPurchase(vehicle);
+            }
+            case 2 -> {
+                // 加入购物车
+                addToCartDirect(vehicle);
+                return;
+            }
+            case 0 -> {
+                return;
+            }
+            default -> {
+                AppUtils.print("无效选择！");
+                return;
+            }
+        }
+    }
+    
+    /**
+     * 执行购买流程
+     */
+    private void performPurchase(VehicleEntity vehicle) {
         int buyCount = 0;
         while (buyCount <= 0) {
-            AppUtils.print("请输入购买数量：");
+            AppUtils.print("请输入购买数量（库存：%d）：", vehicle.getVehicleStock());
             buyCount = scanner.nextInt();
             if (buyCount <= 0) {
                 AppUtils.print("请输入正确的数量！");
             }
+            if (buyCount > vehicle.getVehicleStock()) {
+                AppUtils.print("库存不足！");
+                buyCount = 0;
+            }
         }
-//        计算总价
+        
+        // 计算总价
         double totalPrice = vehicle.getVehiclePrice() * buyCount;
         long timeStamp = System.currentTimeMillis();
         OrderEntity order = new OrderEntity(
@@ -124,30 +168,49 @@ public class VehicleControllerImpl implements VehicleController {
                 timeStamp
         );
 
+        // 打印订单信息
+        AppUtils.printDoubleLine();
+        AppUtils.print("订单信息确认");
+        AppUtils.printLine();
+        printOrderDetails(order, vehicle);
+        AppUtils.printLine();
         AppUtils.print("是否确认购买？(y/n)");
         String confirm = scanner.next();
         if (confirm.equals("y")) {
             int result = vehicleService.buyVehicle(order);
             switch (result) {
-                case 0:
-                    AppUtils.print("购买成功！");
-                    break;
-                case -1:
-                    AppUtils.print("车辆不存在！");
-                    return;
-                case -2:
-                    AppUtils.print("用户不存在！");
-                    break;
-                case -3:
-                    AppUtils.print("库存异常！");
-                    break;
-                default:
-                    AppUtils.print("购买失败！");
-                    break;
+                case 0 -> AppUtils.print("购买成功！");
+                case -1 -> AppUtils.print("车辆不存在！");
+                case -2 -> AppUtils.print("用户不存在！");
+                case -3 -> AppUtils.print("库存异常！");
+                default -> AppUtils.print("购买失败！");
             }
         } else {
             AppUtils.print("取消购买！");
         }
+    }
+    
+    /**
+     * 打印订单详细信息
+     *
+     * @param order   订单
+     * @param vehicle 车辆
+     */
+    private void printOrderDetails(OrderEntity order, VehicleEntity vehicle) {
+        AppUtils.print("# %d @ %s - %s", vehicle.getVehicleId(), vehicle.getVehicleBrand(), vehicle.getVehicleModel());
+        if (vehicle instanceof CommercialVehicleEntity commercialVehicle) {
+            AppUtils.print("# 商用 @ %.2f吨 - %.2f立方", commercialVehicle.getLoadCapacity(), commercialVehicle.getCargoVolume());
+        }
+        if (vehicle instanceof PassengerVehicleEntity passengerVehicle) {
+            AppUtils.print("# 乘用 @ %d座 - %s", passengerVehicle.getSeatCount(), passengerVehicle.getFuelType());
+        }
+        AppUtils.print("# 购买数量：%d辆", order.getBuyCount());
+        AppUtils.print("# 单价：%.2f万元/辆", vehicle.getVehiclePrice());
+        AppUtils.print("# 总价：%.2f万元", order.getTotalPrice());
+        AppUtils.printLine();
+        AppUtils.print("# 订单ID：%d", order.getOrderId());
+        AppUtils.print("# 购买人：%s", currentUser.getUserName());
+        AppUtils.print("# 创建于：%s", new java.text.SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss").format(order.getCreateTime()));
     }
 
     @Override
@@ -159,17 +222,17 @@ public class VehicleControllerImpl implements VehicleController {
                 AppUtils.print("暂无车辆！");
                 AppUtils.printLine();
                 AppUtils.print("1. 添加车辆");
-                AppUtils.print("2. 退出管理");
+                AppUtils.print("2. 搜索车辆");
+                AppUtils.print("0. 退出管理");
                 AppUtils.print("请选择操作:");
                 switch (scanner.nextInt()) {
-                    case 1:
-                        addVehicle();
-                        break;
-                    case 2:
+                    case 1 -> addVehicle();
+                    case 2 -> searchVehicle();
+                    case 0 -> {
                         currentUser = null;
                         return;
-                    default:
-                        AppUtils.print("请输入正确的选项！");
+                    }
+                    default -> AppUtils.print("请输入正确的选项！");
                 }
             } else {
                 AppUtils.print("以下为当前存在车辆:");
@@ -179,23 +242,19 @@ public class VehicleControllerImpl implements VehicleController {
                 AppUtils.print("1. 添加车辆");
                 AppUtils.print("2. 删除车辆");
                 AppUtils.print("3. 修改车辆");
-                AppUtils.print("4. 退出管理");
+                AppUtils.print("4. 搜索车辆");
+                AppUtils.print("0. 退出管理");
                 AppUtils.print("请选择操作:");
                 switch (scanner.nextInt()) {
-                    case 1:
-                        addVehicle();
-                        break;
-                    case 2:
-                        deleteVehicle();
-                        break;
-                    case 3:
-                        updateVehicle();
-                        break;
-                    case 4:
+                    case 1 -> addVehicle();
+                    case 2 -> deleteVehicle();
+                    case 3 -> updateVehicle();
+                    case 4 -> searchVehicle();
+                    case 0 -> {
                         currentUser = null;
                         return;
-                    default:
-                        AppUtils.print("请输入正确的选项！");
+                    }
+                    default -> AppUtils.print("请输入正确的选项！");
                 }
             }
         }
@@ -210,19 +269,20 @@ public class VehicleControllerImpl implements VehicleController {
                 AppUtils.print("设置车辆类型（乘/商)");
                 String type = scanner.next();
                 switch (type) {
-                    case "乘":
+                    case "乘" -> {
                         vehicleType = "passenger";
                         newVehicle = new PassengerVehicleEntity();
                         newVehicle.setVehicleType(vehicleType);
-                        break;
-                    case "商":
+                    }
+                    case "商" -> {
                         vehicleType = "commercial";
                         newVehicle = new CommercialVehicleEntity();
                         newVehicle.setVehicleType(vehicleType);
-                        break;
-                    default:
+                    }
+                    default -> {
                         AppUtils.print("请输入正确的车辆类型！");
                         continue;
+                    }
                 }
             }
             AppUtils.print("1. 设置品牌：%s", newVehicle.getVehicleBrand() != null ? newVehicle.getVehicleBrand() : "");
@@ -241,23 +301,23 @@ public class VehicleControllerImpl implements VehicleController {
             AppUtils.print("8. 取消添加");
 
             switch (scanner.nextInt()) {
-                case 1:
+                case 1 -> {
                     AppUtils.print("请输入车辆品牌:");
                     newVehicle.setVehicleBrand(scanner.next());
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     AppUtils.print("请输入车辆型号:");
                     newVehicle.setVehicleModel(scanner.next());
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     AppUtils.print("请输入车辆单价（万元/辆）:");
                     newVehicle.setVehiclePrice(scanner.nextDouble());
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     AppUtils.print("请输入车辆库存（辆）:");
                     newVehicle.setVehicleStock(scanner.nextInt());
-                    break;
-                case 5:
+                }
+                case 5 -> {
                     if (vehicleType.equals("commercial")) {
                         AppUtils.print("请输入车辆载重（吨）:");
                         ((CommercialVehicleEntity) newVehicle).setLoadCapacity(scanner.nextDouble());
@@ -265,8 +325,8 @@ public class VehicleControllerImpl implements VehicleController {
                         AppUtils.print("请输入车辆载客量（座）:");
                         ((PassengerVehicleEntity) newVehicle).setSeatCount(scanner.nextInt());
                     }
-                    break;
-                case 6:
+                }
+                case 6 -> {
                     if (vehicleType.equals("commercial")) {
                         AppUtils.print("请输入车辆容积（立方米）:");
                         ((CommercialVehicleEntity) newVehicle).setCargoVolume(scanner.nextDouble());
@@ -274,8 +334,8 @@ public class VehicleControllerImpl implements VehicleController {
                         AppUtils.print("请输入车辆动力类型:");
                         ((PassengerVehicleEntity) newVehicle).setFuelType(scanner.next());
                     }
-                    break;
-                case 7:
+                }
+                case 7 -> {
                     printVehicle(newVehicle);
                     AppUtils.print("是否确定添加车辆？(y/n)");
                     if (scanner.next().equals("y")) {
@@ -290,16 +350,15 @@ public class VehicleControllerImpl implements VehicleController {
                     } else {
                         AppUtils.print("取消添加！");
                     }
-                    break;
-                case 8:
+                }
+                case 0 -> {
                     AppUtils.print("未保存的信息将会丢失！确定取消？（y/n）");
                     if (scanner.next().equals("y")) {
                         AppUtils.print("取消添加！");
                         return;
                     }
-                    break;
-                default:
-                    AppUtils.print("请输入正确的选项！");
+                }
+                default -> AppUtils.print("请输入正确的选项！");
             }
         }
     }
@@ -365,18 +424,18 @@ public class VehicleControllerImpl implements VehicleController {
             }
 
             AppUtils.print("7. 保存修改");
-            AppUtils.print("8. 取消修改");
+            AppUtils.print("0. 取消修改");
 
             switch (scanner.nextInt()) {
-                case 3:
+                case 3 -> {
                     AppUtils.print("请输入车辆单价（万元/辆）:");
                     vehicle.setVehiclePrice(scanner.nextDouble());
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     AppUtils.print("请输入车辆库存（辆）:");
                     vehicle.setVehicleStock(scanner.nextInt());
-                    break;
-                case 5:
+                }
+                case 5 -> {
                     if (vehicleType.equals("commercial")) {
                         AppUtils.print("请输入车辆载重（吨）:");
                         ((CommercialVehicleEntity) vehicle).setLoadCapacity(scanner.nextDouble());
@@ -384,8 +443,8 @@ public class VehicleControllerImpl implements VehicleController {
                         AppUtils.print("请输入车辆载客量（座）:");
                         ((PassengerVehicleEntity) vehicle).setSeatCount(scanner.nextInt());
                     }
-                    break;
-                case 6:
+                }
+                case 6 -> {
                     if (vehicleType.equals("commercial")) {
                         AppUtils.print("请输入车辆容积（立方米）:");
                         ((CommercialVehicleEntity) vehicle).setCargoVolume(scanner.nextDouble());
@@ -393,8 +452,8 @@ public class VehicleControllerImpl implements VehicleController {
                         AppUtils.print("请输入车辆动力类型:");
                         ((PassengerVehicleEntity) vehicle).setFuelType(scanner.next());
                     }
-                    break;
-                case 7:
+                }
+                case 7 -> {
                     printVehicle(vehicle);
                     AppUtils.print("是否确定修改车辆信息？(y/n)");
                     if (scanner.next().equals("y")) {
@@ -407,16 +466,15 @@ public class VehicleControllerImpl implements VehicleController {
                     } else {
                         AppUtils.print("取消修改！");
                     }
-                    break;
-                case 8:
+                }
+                case 0 -> {
                     AppUtils.print("未保存的修改将会丢失！确定取消？（y/n）");
                     if (scanner.next().equals("y")) {
                         AppUtils.print("取消修改！");
                         return;
                     }
-                    break;
-                default:
-                    AppUtils.print("请输入正确的选项！");
+                }
+                default -> AppUtils.print("请输入正确的选项！");
             }
         }
     }
@@ -464,4 +522,216 @@ public class VehicleControllerImpl implements VehicleController {
             printVehicleInline(vehicle);
         }
     }
+    
+    /**
+     * 加入购物车功能
+     */
+    private void addToCart() {
+        if (currentUser == null) {
+            AppUtils.print("请先登录！");
+            return;
+        }
+        
+        ArrayList<VehicleEntity> vehicles = vehicleService.selectAllVehicle();
+        AppUtils.printDoubleLine();
+        AppUtils.print("车辆列表：");
+        AppUtils.printLine();
+        printAllVehicle(vehicles);
+        AppUtils.printLine();
+        
+        AppUtils.print("请输入要加入购物车的车辆ID：");
+        long vehicleId = scanner.nextLong();
+        VehicleEntity vehicle = vehicleService.selectVehicle(vehicleId);
+        
+        if (vehicle == null) {
+            AppUtils.print("车辆不存在！");
+            return;
+        }
+        
+        if (vehicle.getVehicleStock() <= 0) {
+            AppUtils.print("车辆已售完！");
+            return;
+        }
+        
+        AppUtils.print("请输入购买数量（库存：%d）：", vehicle.getVehicleStock());
+        int quantity = scanner.nextInt();
+        
+        if (quantity <= 0) {
+            AppUtils.print("购买数量必须大于0！");
+            return;
+        }
+        
+        if (quantity > vehicle.getVehicleStock()) {
+            AppUtils.print("库存不足！");
+            return;
+        }
+        
+        // 调用购物车服务添加商品
+        cn.javat.javaLearn.experiment4.service.CartService cartService = cn.javat.javaLearn.experiment4.service.Impl.CartServiceImpl.getInstance();
+        int result = cartService.addToCart(currentUser.getUserId(), vehicleId, quantity);
+        
+        if (result == 0) {
+            AppUtils.print("车辆已成功加入购物车！");
+        } else {
+            AppUtils.print("加入购物车失败！");
+        }
+    }
+    
+    /**
+     * 直接添加到购物车（从购买界面）
+     */
+    private void addToCartDirect(VehicleEntity vehicle) {
+        AppUtils.print("请输入购买数量（库存：%d）：", vehicle.getVehicleStock());
+        int quantity = scanner.nextInt();
+        
+        if (quantity <= 0) {
+            AppUtils.print("购买数量必须大于0！");
+            return;
+        }
+        
+        if (quantity > vehicle.getVehicleStock()) {
+            AppUtils.print("库存不足！");
+            return;
+        }
+        
+        // 调用购物车服务添加商品
+        cn.javat.javaLearn.experiment4.service.CartService cartService = cn.javat.javaLearn.experiment4.service.Impl.CartServiceImpl.getInstance();
+        int result = cartService.addToCart(currentUser.getUserId(), vehicle.getVehicleId(), quantity);
+        
+        if (result == 0) {
+            AppUtils.print("车辆已成功加入购物车！");
+        } else {
+            AppUtils.print("加入购物车失败！");
+        }
+    }
+    
+    @Override
+    public void searchVehicle() {
+        AppUtils.printDoubleLine();
+        AppUtils.print("车辆搜索功能");
+        AppUtils.printLine();
+        AppUtils.print("1. 关键词搜索");
+        AppUtils.print("2. 条件筛选");
+        AppUtils.print("0. 返回上级");
+        
+        switch (scanner.nextInt()) {
+            case 1 -> {
+                AppUtils.print("请输入搜索关键词（品牌或型号）:");
+                scanner.nextLine(); // 消费掉nextInt()后的换行符
+                String keyword = scanner.nextLine();
+                ArrayList<VehicleEntity> result = vehicleService.searchByKeyword(keyword);
+                if (result.isEmpty()) {
+                    AppUtils.print("未找到匹配的车辆信息！");
+                } else {
+                    AppUtils.print("搜索结果:");
+                    AppUtils.printLine();
+                    printAllVehicle(result);
+                    // 添加操作选项
+                    handleSearchResult(result);
+                }
+            }
+            case 2 -> {
+                scanner.nextLine(); // 消费掉nextInt()后的换行符
+                
+                AppUtils.print("请输入品牌（留空表示不限）:");
+                String brand = scanner.nextLine();
+                if (brand.trim().isEmpty()) brand = null;
+                
+                AppUtils.print("请输入最低价格（留空表示不限）:");
+                String minPriceStr = scanner.nextLine();
+                Double minPrice = null;
+                if (!minPriceStr.trim().isEmpty()) {
+                    try {
+                        minPrice = Double.valueOf(minPriceStr);
+                    } catch (NumberFormatException e) {
+                        AppUtils.print("最低价格格式不正确，将忽略此条件");
+                    }
+                }
+                
+                AppUtils.print("请输入最高价格（留空表示不限）:");
+                String maxPriceStr = scanner.nextLine();
+                Double maxPrice = null;
+                if (!maxPriceStr.trim().isEmpty()) {
+                    try {
+                        maxPrice = Double.valueOf(maxPriceStr);
+                    } catch (NumberFormatException e) {
+                        AppUtils.print("最高价格格式不正确，将忽略此条件");
+                    }
+                }
+                
+                AppUtils.print("请输入车辆类型（passenger:乘用车, commercial:商用车, 留空表示不限）:");
+                String type = scanner.nextLine();
+                if (type.trim().isEmpty()) type = null;
+                
+                ArrayList<VehicleEntity> result = vehicleService.searchByCondition(brand, minPrice, maxPrice, type);
+                if (result.isEmpty()) {
+                    AppUtils.print("未找到匹配的车辆信息！");
+                } else {
+                    AppUtils.print("筛选结果:");
+                    AppUtils.printLine();
+                    printAllVehicle(result);
+                    // 添加操作选项
+                    handleSearchResult(result);
+                }
+            }
+            case 0 -> {
+                // 返回上一级
+                scanner.nextLine(); // 消费掉换行符
+            }
+            default -> {
+                AppUtils.print("请输入正确的选项！");
+                scanner.nextLine(); // 消费掉换行符
+            }
+        }
+    }
+    
+    /**
+     * 处理搜索结果，提供操作选项
+     */
+    private void handleSearchResult(ArrayList<VehicleEntity> vehicles) {
+        if (vehicles.isEmpty()) {
+            return;
+        }
+        
+        AppUtils.printLine();
+        AppUtils.print("请选择操作：");
+        AppUtils.print("1. 查看车辆详情");
+        AppUtils.print("0. 返回上级");
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1 -> {
+                AppUtils.print("请输入要查看的车辆序号（1-%d）：", vehicles.size());
+                int index = scanner.nextInt();
+                if (index < 1 || index > vehicles.size()) {
+                    AppUtils.print("序号无效！");
+                    return;
+                }
+                
+                VehicleEntity vehicle = vehicles.get(index - 1);
+                AppUtils.printDoubleLine();
+                AppUtils.print("车辆详细信息：");
+                printVehicle(vehicle);
+                AppUtils.printLine();
+                
+                AppUtils.print("请选择操作：");
+                AppUtils.print("1. 立即购买");
+                AppUtils.print("2. 加入购物车");
+                AppUtils.print("0. 返回上级");
+                int action = scanner.nextInt();
+                switch (action) {
+                    case 1 -> performPurchase(vehicle);
+                    case 2 -> addToCartDirect(vehicle);
+                    case 0 -> {
+                        return;
+                    }
+                    default -> AppUtils.print("无效选择！");
+                }
+            }
+            case 0 -> {
+                return;
+            }
+            default -> AppUtils.print("无效选择！");
+        }
+    }
+
 }

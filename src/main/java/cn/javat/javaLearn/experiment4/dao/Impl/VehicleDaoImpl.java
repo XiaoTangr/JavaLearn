@@ -171,8 +171,6 @@ public class VehicleDaoImpl implements VehicleDao {
                 "FROM vehicles v " +
                 "LEFT JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id " +
                 "LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id";
-
-
         try (Connection connection = DBUtils.getInstance().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -284,5 +282,86 @@ public class VehicleDaoImpl implements VehicleDao {
                     .vehicleStock(resultSet.getInt("vehicle_stock"))
                     .build();
         }
+    }
+    
+    @Override
+    public ArrayList<VehicleEntity> searchByKeyword(String keyword) {
+        ArrayList<VehicleEntity> vehicles = new ArrayList<>();
+        String sql = "SELECT v.*, pv.seat_count, pv.fuel_type, cv.load_capacity, cv.cargo_volume " +
+                "FROM vehicles v " +
+                "LEFT JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id " +
+                "LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id " +
+                "WHERE v.vehicle_brand LIKE ? OR v.vehicle_model LIKE ?";
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, "%" + keyword + "%");
+            preparedStatement.setString(2, "%" + keyword + "%");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                VehicleEntity vehicle = createVehicleFromResultSet(resultSet);
+                vehicles.add(vehicle);
+            }
+        } catch (SQLException e) {
+            AppUtils.print("根据关键词搜索车辆信息失败: " + e);
+        }
+        return vehicles;
+    }
+
+    @Override
+    public ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type) {
+        ArrayList<VehicleEntity> vehicles = new ArrayList<>();
+        
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT v.*, pv.seat_count, pv.fuel_type, cv.load_capacity, cv.cargo_volume ")
+                  .append("FROM vehicles v ")
+                  .append("LEFT JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id ")
+                  .append("LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id ")
+                  .append("WHERE 1=1 ");
+        
+        if (brand != null && !brand.isEmpty()) {
+            sqlBuilder.append("AND v.vehicle_brand = ? ");
+        }
+        
+        if (minPrice != null) {
+            sqlBuilder.append("AND v.vehicle_price >= ? ");
+        }
+        
+        if (maxPrice != null) {
+            sqlBuilder.append("AND v.vehicle_price <= ? ");
+        }
+        
+        if (type != null && !type.isEmpty()) {
+            sqlBuilder.append("AND v.vehicle_type = ? ");
+        }
+        
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlBuilder.toString());
+            
+            int paramIndex = 1;
+            if (brand != null && !brand.isEmpty()) {
+                preparedStatement.setString(paramIndex++, brand);
+            }
+            
+            if (minPrice != null) {
+                preparedStatement.setDouble(paramIndex++, minPrice);
+            }
+            
+            if (maxPrice != null) {
+                preparedStatement.setDouble(paramIndex++, maxPrice);
+            }
+            
+            if (type != null && !type.isEmpty()) {
+                preparedStatement.setString(paramIndex++, type);
+            }
+            
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                VehicleEntity vehicle = createVehicleFromResultSet(resultSet);
+                vehicles.add(vehicle);
+            }
+        } catch (SQLException e) {
+            AppUtils.print("根据条件搜索车辆信息失败: " + e);
+        }
+        return vehicles;
     }
 }

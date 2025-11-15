@@ -49,15 +49,5 @@ public class DBUtils {
             return null;
         }
     }
-
-    // 关闭数据库连接
-    public void closeConnection(Connection connection) {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                AppUtils.print("关闭数据库连接时出错: " + e);
-            }
-        }
-    }
+    
 }

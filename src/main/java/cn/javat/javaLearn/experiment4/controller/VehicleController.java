@@ -59,6 +59,12 @@ public interface VehicleController {
      */
     void updateVehicle();
 
+    /**
+     * 搜索车辆功能
+     * 提供关键词搜索和条件筛选功能
+     */
+    void searchVehicle();
+
     //    —————————————————— 公    共 ——————————————————————
 
     /**

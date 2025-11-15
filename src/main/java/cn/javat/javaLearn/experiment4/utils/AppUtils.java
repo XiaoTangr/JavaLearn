@@ -1,9 +1,5 @@
 package cn.javat.javaLearn.experiment4.utils;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
 public class AppUtils {
     //    打印单行分割线
     public static void printLine() {
@@ -32,24 +28,4 @@ public class AppUtils {
         }
     }
 
-    public static void saveJsonFile(String json, String path) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path))) {
-            bw.write(json);
-            bw.flush();
-        } catch (IOException e) {
-            AppUtils.print("保存文件失败：path：%s", e.toString());
-        }
-    }
-
-    public static void createPath(String s) {
-//        创建文件夹
-        try {
-            java.io.File file = new java.io.File(s);
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-        } catch (Exception e) {
-            AppUtils.print("创建文件夹失败：path：%s", e.toString());
-        }
-    }
 }

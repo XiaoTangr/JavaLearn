@@ -11,7 +11,11 @@ import cn.javat.javaLearn.experiment4.entity.OrderEntity;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
 import cn.javat.javaLearn.experiment4.entity.Vehicles.VehicleEntity;
 import cn.javat.javaLearn.experiment4.service.VehicleService;
+import cn.javat.javaLearn.experiment4.utils.AppUtils;
+import cn.javat.javaLearn.experiment4.utils.DBUtils;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class VehicleServiceImpl implements VehicleService {
@@ -120,20 +124,56 @@ public class VehicleServiceImpl implements VehicleService {
             return -3; // 库存不足
         }
 
-        // 插入订单
-        int orderResult = orderDao.insert(order);
+        // 使用事务保证操作的原子性
+        Connection connection = null;
+        try {
+            connection = DBUtils.getInstance().getConnection();
+            connection.setAutoCommit(false); // 开启事务
 
-        if (orderResult <= 0) {
-            return -1; // 订单插入失败
-        }
-        // 更新车辆库存
-        vehicle.setVehicleStock(vehicle.getVehicleStock() - buyCount);
-        int vehicleResult = vehicleDao.update(vehicle);
-        if (vehicleResult <= 0) {
-            // 如果车辆更新失败，需要删除已插入的订单（事务回滚）
-            orderDao.delete(order.getOrderId());
+            // 插入订单
+            int orderResult = orderDao.insert(order);
+
+            if (orderResult <= 0) {
+                connection.rollback(); // 回滚事务
+                return -1; // 订单插入失败
+            }
+            
+            // 更新车辆库存
+            vehicle.setVehicleStock(vehicle.getVehicleStock() - buyCount);
+            int vehicleResult = vehicleDao.update(vehicle);
+            if (vehicleResult <= 0) {
+                connection.rollback(); // 回滚事务
+                return -1;
+            }
+            
+            connection.commit(); // 提交事务
+            return 0; // 购买成功
+        } catch (SQLException e) {
+            AppUtils.print("购买车辆时发生数据库错误: " + e);
+            try {
+                connection.rollback(); // 回滚事务
+            } catch (SQLException rollbackEx) {
+                AppUtils.print("事务回滚失败: " + rollbackEx);
+            }
             return -1;
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true); // 恢复自动提交
+                } catch (SQLException e) {
+                    AppUtils.print("恢复自动提交失败: " + e);
+                }
+            }
         }
-        return 0; // 购买成功
+    }
+    
+    @Override
+    public ArrayList<VehicleEntity> searchByKeyword(String keyword) {
+        return vehicleDao.searchByKeyword(keyword);
+    }
+    
+    @Override
+    public ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type) {
+        return vehicleDao.searchByCondition(brand, minPrice, maxPrice, type);
     }
 }

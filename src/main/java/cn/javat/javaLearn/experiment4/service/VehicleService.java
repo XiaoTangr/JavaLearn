@@ -52,4 +52,23 @@ public interface VehicleService {
      * @return 0: 购买成功 -1: 车辆不存在 -2：用户不存在 -3: 库存不足
      */
     int buyVehicle(OrderEntity order);
+    
+    /**
+     * 根据关键词搜索车辆
+     * 
+     * @param keyword 关键词
+     * @return 车辆列表
+     */
+    ArrayList<VehicleEntity> searchByKeyword(String keyword);
+    
+    /**
+     * 根据条件搜索车辆
+     * 
+     * @param brand 品牌
+     * @param minPrice 最低价格
+     * @param maxPrice 最高价格
+     * @param type 类型
+     * @return 车辆列表
+     */
+    ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type);
 }

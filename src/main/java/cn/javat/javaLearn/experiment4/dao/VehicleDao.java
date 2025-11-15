@@ -16,15 +16,13 @@ public interface VehicleDao {
     VehicleEntity select(long pk);
 
     ArrayList<VehicleEntity> selectAll();
+
+    ArrayList<PassengerVehicleEntity> selectAllPassengerVehicles();
+
+    ArrayList<CommercialVehicleEntity> selectAllCommercialVehicles();
     
-    // 特定类型的查询方法
-    default ArrayList<PassengerVehicleEntity> selectAllPassengerVehicles() {
-        // 默认实现将在实现类中被覆盖
-        throw new UnsupportedOperationException("需要在实现类中覆盖此方法");
-    }
+    // 搜索功能
+    ArrayList<VehicleEntity> searchByKeyword(String keyword);
     
-    default ArrayList<CommercialVehicleEntity> selectAllCommercialVehicles() {
-        // 默认实现将在实现类中被覆盖
-        throw new UnsupportedOperationException("需要在实现类中覆盖此方法");
-    }
+    ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type);
 }
