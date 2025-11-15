@@ -4,6 +4,7 @@ import cn.javat.javaLearn.experiment4.config.AppConfig;
 import cn.javat.javaLearn.experiment4.controller.DataBackupController;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
 import cn.javat.javaLearn.experiment4.service.DataBackupService;
+import cn.javat.javaLearn.experiment4.service.Impl.DataBackupServiceImpl;
 import cn.javat.javaLearn.experiment4.utils.AppUtils;
 
 import java.io.File;
@@ -14,7 +15,7 @@ public class DataBackupControllerImpl implements DataBackupController {
     
     private final String ADMIN_EMAIL = AppConfig.getInstance().getProperty("user.admin_email");
     private final Scanner scanner = new Scanner(System.in);
-    private final DataBackupService dataBackupService = DataBackupService.getInstance();
+    private final DataBackupService dataBackupService = DataBackupServiceImpl.getInstance();
     
     private UserEntity currentUser = null;
 
