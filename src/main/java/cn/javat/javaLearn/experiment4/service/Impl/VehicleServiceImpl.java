@@ -176,4 +176,14 @@ public class VehicleServiceImpl implements VehicleService {
     public ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type) {
         return vehicleDao.searchByCondition(brand, minPrice, maxPrice, type);
     }
+    
+    @Override
+    public ArrayList<VehicleEntity> getLowStockVehicles(int threshold) {
+        return vehicleDao.getLowStockVehicles(threshold);
+    }
+    
+    @Override
+    public double calculateInventoryTurnoverRate() {
+        return vehicleDao.calculateInventoryTurnoverRate();
+    }
 }

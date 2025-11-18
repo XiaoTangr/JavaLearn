@@ -364,4 +364,49 @@ public class VehicleDaoImpl implements VehicleDao {
         }
         return vehicles;
     }
+    
+    @Override
+    public ArrayList<VehicleEntity> getLowStockVehicles(int threshold) {
+        ArrayList<VehicleEntity> vehicles = new ArrayList<>();
+        String sql = "SELECT v.*, pv.seat_count, pv.fuel_type, cv.load_capacity, cv.cargo_volume " +
+                "FROM vehicles v " +
+                "LEFT JOIN passenger_vehicles pv ON v.vehicle_id = pv.vehicle_id " +
+                "LEFT JOIN commercial_vehicles cv ON v.vehicle_id = cv.vehicle_id " +
+                "WHERE v.vehicle_stock <= ?";
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, threshold);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                VehicleEntity vehicle = createVehicleFromResultSet(resultSet);
+                vehicles.add(vehicle);
+            }
+        } catch (SQLException e) {
+            AppUtils.print("查询低库存车辆信息失败: " + e);
+        }
+        return vehicles;
+    }
+    
+    @Override
+    public double calculateInventoryTurnoverRate() {
+        String sql = "SELECT SUM(o.buy_count) as total_sold, SUM(v.vehicle_stock + o.buy_count) as average_inventory " +
+                "FROM vehicles v " +
+                "LEFT JOIN orders o ON v.vehicle_id = o.vehicle_id";
+                
+        try (Connection connection = DBUtils.getInstance().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                int totalSold = resultSet.getInt("total_sold");
+                int averageInventory = resultSet.getInt("average_inventory");
+                
+                if (averageInventory > 0) {
+                    return (double) totalSold / averageInventory;
+                }
+            }
+        } catch (SQLException e) {
+            AppUtils.print("计算库存周转率失败: " + e);
+        }
+        return 0.0;
+    }
 }

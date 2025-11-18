@@ -64,6 +64,18 @@ public interface VehicleController {
      * 提供关键词搜索和条件筛选功能
      */
     void searchVehicle();
+    
+    /**
+     * 库存预警功能
+     * 显示低于指定阈值的车辆
+     */
+    void showLowStockVehicles();
+    
+    /**
+     * 库存统计功能
+     * 显示库存周转率等统计信息
+     */
+    void showInventoryStatistics();
 
     //    —————————————————— 公    共 ——————————————————————
 

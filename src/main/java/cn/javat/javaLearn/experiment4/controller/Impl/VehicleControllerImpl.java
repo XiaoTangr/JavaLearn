@@ -243,6 +243,8 @@ public class VehicleControllerImpl implements VehicleController {
                 AppUtils.print("2. 删除车辆");
                 AppUtils.print("3. 修改车辆");
                 AppUtils.print("4. 搜索车辆");
+                AppUtils.print("5. 库存预警");
+                AppUtils.print("6. 库存统计");
                 AppUtils.print("0. 退出管理");
                 AppUtils.print("请选择操作:");
                 switch (scanner.nextInt()) {
@@ -250,6 +252,8 @@ public class VehicleControllerImpl implements VehicleController {
                     case 2 -> deleteVehicle();
                     case 3 -> updateVehicle();
                     case 4 -> searchVehicle();
+                    case 5 -> showLowStockVehicles();
+                    case 6 -> showInventoryStatistics();
                     case 0 -> {
                         currentUser = null;
                         return;
@@ -682,6 +686,43 @@ public class VehicleControllerImpl implements VehicleController {
                 AppUtils.print("请输入正确的选项！");
                 scanner.nextLine(); // 消费掉换行符
             }
+        }
+    }
+    
+    @Override
+    public void showLowStockVehicles() {
+        AppUtils.printDoubleLine();
+        AppUtils.print("库存预警功能");
+        AppUtils.printLine();
+        AppUtils.print("请输入库存阈值（显示库存小于等于该值的车辆）:");
+        int threshold = scanner.nextInt();
+        
+        ArrayList<VehicleEntity> lowStockVehicles = vehicleService.getLowStockVehicles(threshold);
+        
+        if (lowStockVehicles.isEmpty()) {
+            AppUtils.print("没有库存低于 %d 的车辆", threshold);
+        } else {
+            AppUtils.print("以下车辆库存低于或等于 %d:", threshold);
+            AppUtils.printLine();
+            printAllVehicle(lowStockVehicles);
+        }
+    }
+    
+    @Override
+    public void showInventoryStatistics() {
+        AppUtils.printDoubleLine();
+        AppUtils.print("库存统计功能");
+        AppUtils.printLine();
+        
+        double turnoverRate = vehicleService.calculateInventoryTurnoverRate();
+        AppUtils.print("库存周转率: %.2f", turnoverRate);
+        
+        if (turnoverRate < 0.5) {
+            AppUtils.print("提示: 库存周转率较低，建议采取促销措施");
+        } else if (turnoverRate > 2.0) {
+            AppUtils.print("提示: 库存周转率较高，注意及时补货");
+        } else {
+            AppUtils.print("提示: 库存周转率正常");
         }
     }
     

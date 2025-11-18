@@ -25,4 +25,10 @@ public interface VehicleDao {
     ArrayList<VehicleEntity> searchByKeyword(String keyword);
     
     ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type);
+    
+    // 库存预警功能
+    ArrayList<VehicleEntity> getLowStockVehicles(int threshold);
+    
+    // 库存统计功能
+    double calculateInventoryTurnoverRate();
 }

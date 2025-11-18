@@ -71,4 +71,19 @@ public interface VehicleService {
      * @return 车辆列表
      */
     ArrayList<VehicleEntity> searchByCondition(String brand, Double minPrice, Double maxPrice, String type);
+    
+    /**
+     * 获取低库存车辆
+     * 
+     * @param threshold 库存阈值
+     * @return 低库存车辆列表
+     */
+    ArrayList<VehicleEntity> getLowStockVehicles(int threshold);
+    
+    /**
+     * 计算库存周转率
+     * 
+     * @return 库存周转率
+     */
+    double calculateInventoryTurnoverRate();
 }
