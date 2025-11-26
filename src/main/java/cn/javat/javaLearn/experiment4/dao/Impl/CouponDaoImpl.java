@@ -18,7 +18,7 @@ public class CouponDaoImpl implements CouponDao {
     public boolean createCoupon(CouponEntity coupon) {
         String sql = "INSERT INTO coupons (code, name, discount, min_amount, start_time, end_time, is_active, total_count, used_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, coupon.getCode());
@@ -42,7 +42,7 @@ public class CouponDaoImpl implements CouponDao {
     public CouponEntity getCouponById(Long id) {
         String sql = "SELECT * FROM coupons WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -62,7 +62,7 @@ public class CouponDaoImpl implements CouponDao {
     public CouponEntity getCouponByCode(String code) {
         String sql = "SELECT * FROM coupons WHERE code = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, code);
@@ -82,7 +82,7 @@ public class CouponDaoImpl implements CouponDao {
     public boolean updateCoupon(CouponEntity coupon) {
         String sql = "UPDATE coupons SET code = ?, name = ?, discount = ?, min_amount = ?, start_time = ?, end_time = ?, is_active = ?, total_count = ?, used_count = ? WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, coupon.getCode());
@@ -107,7 +107,7 @@ public class CouponDaoImpl implements CouponDao {
     public boolean deleteCoupon(Long id) {
         String sql = "DELETE FROM coupons WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -133,7 +133,7 @@ public class CouponDaoImpl implements CouponDao {
     private List<CouponEntity> getCouponsBySql(String sql) {
         List<CouponEntity> coupons = new ArrayList<>();
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             

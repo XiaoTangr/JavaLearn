@@ -8,6 +8,8 @@ import cn.javat.javaLearn.experiment4.controller.CustomerServiceController;
 import cn.javat.javaLearn.experiment4.controller.DataBackupController;
 import cn.javat.javaLearn.experiment4.controller.CartController;
 import cn.javat.javaLearn.experiment4.entity.UserEntity;
+import cn.javat.javaLearn.experiment4.service.DataBackupService;
+import cn.javat.javaLearn.experiment4.service.Impl.DataBackupServiceImpl;
 import cn.javat.javaLearn.experiment4.service.Impl.UserServiceImpl;
 import cn.javat.javaLearn.experiment4.service.UserService;
 import cn.javat.javaLearn.experiment4.utils.AppUtils;
@@ -54,7 +56,11 @@ public class UserControllerImpl implements UserController {
             switch (choice) {
                 case 1 -> login();
                 case 2 -> register();
-                case 0 -> System.exit(0);
+                case 0 -> {
+                    DataBackupService backup = DataBackupServiceImpl.getInstance();
+                    backup.backupDatabase();
+                    System.exit(0);
+                }
                 default -> AppUtils.print("无效的选择！请重新选择。");
             }
         }
@@ -208,7 +214,7 @@ public class UserControllerImpl implements UserController {
             AppUtils.print("是否确认注册？(y/n)");
             String choice = scanner.next();
             if (choice.equals("y")) {
-                AppUtils.print("注册成功,即将自动登录");
+                AppUtils.print("注册成功，请登录");
                 UserEntity registeredUser = userService.register(newUser);
                 if (registeredUser != null) {
                     currentUser.set(registeredUser);
@@ -231,6 +237,7 @@ public class UserControllerImpl implements UserController {
     //    修改用户信息
     @Override
     public void updateUser(UserEntity user) {
+        UserEntity withoutEdit = user;
         boolean finishEdit = false;
         while (!finishEdit) {
             AppUtils.printDoubleLine();
@@ -280,7 +287,7 @@ public class UserControllerImpl implements UserController {
             }
         }
         AppUtils.print("原始用户信息：");
-        printUserInline(user);
+        printUserInline(withoutEdit);
         AppUtils.print("更新用户信息：");
         printUserInline(user);
         AppUtils.print("是否确认修改？(y/n)");

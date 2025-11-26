@@ -88,6 +88,7 @@ public class DataBackupServiceImpl implements DataBackupService {
             // 生成备份文件名
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String backupFileName = String.format("backup_%s.sql", timestamp);
+//            构建路径
             String backupFilePath = backupPath + File.separator + backupFileName;
 
             AppUtils.print("开始数据库备份，请稍候...");
@@ -98,6 +99,7 @@ public class DataBackupServiceImpl implements DataBackupService {
 
             // 构建mysqldump命令
             ProcessBuilder processBuilder = new ProcessBuilder();
+//            mysqldump -h<host> -P<port> -u<username> -p<password> <database>
             processBuilder.command(mysqldumpPath, "-h" + host, "-P" + port, "-u" + username, "-p" + password, database);
 
             // 重定向输出到文件
@@ -128,7 +130,6 @@ public class DataBackupServiceImpl implements DataBackupService {
             }
         } catch (Exception e) {
             AppUtils.print("数据库备份过程中发生异常：%s", e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -170,6 +171,8 @@ public class DataBackupServiceImpl implements DataBackupService {
 
             // 构建mysql命令
             ProcessBuilder processBuilder = new ProcessBuilder();
+//            mysql -h<host> -P<port> -u<username> -p<password> <database>
+
             processBuilder.command(mysqlPath, "-h" + host, "-P" + port, "-u" + username, "-p" + password, database);
 
             // 重定向输入从文件
@@ -199,7 +202,6 @@ public class DataBackupServiceImpl implements DataBackupService {
             }
         } catch (Exception e) {
             AppUtils.print("数据库恢复过程中发生异常：%s", e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }

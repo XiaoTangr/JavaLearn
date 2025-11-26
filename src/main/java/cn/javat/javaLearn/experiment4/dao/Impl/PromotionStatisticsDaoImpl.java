@@ -18,7 +18,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
     public boolean createStatistics(PromotionStatisticsEntity statistics) {
         String sql = "INSERT INTO promotion_statistics (promotion_id, coupon_id, participation_count, order_count, total_discount, total_sales, statistics_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, statistics.getPromotionId());
@@ -44,7 +44,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
     public PromotionStatisticsEntity getStatisticsById(Long id) {
         String sql = "SELECT * FROM promotion_statistics WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -65,7 +65,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
         String sql = "SELECT * FROM promotion_statistics WHERE promotion_id = ?";
         List<PromotionStatisticsEntity> statisticsList = new ArrayList<>();
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, promotionId);
@@ -85,7 +85,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
     public boolean updateStatistics(PromotionStatisticsEntity statistics) {
         String sql = "UPDATE promotion_statistics SET promotion_id = ?, coupon_id = ?, participation_count = ?, order_count = ?, total_discount = ?, total_sales = ?, statistics_date = ? WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, statistics.getPromotionId());
@@ -112,7 +112,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
     public boolean deleteStatistics(Long id) {
         String sql = "DELETE FROM promotion_statistics WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -128,7 +128,7 @@ public class PromotionStatisticsDaoImpl implements PromotionStatisticsDao {
         String sql = "SELECT * FROM promotion_statistics";
         List<PromotionStatisticsEntity> statisticsList = new ArrayList<>();
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             

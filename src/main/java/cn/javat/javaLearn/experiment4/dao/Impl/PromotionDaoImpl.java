@@ -18,7 +18,7 @@ public class PromotionDaoImpl implements PromotionDao {
     public boolean createPromotion(PromotionEntity promotion) {
         String sql = "INSERT INTO promotions (name, description, type, discount, min_purchase, start_time, end_time, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, promotion.getName());
@@ -41,7 +41,7 @@ public class PromotionDaoImpl implements PromotionDao {
     public PromotionEntity getPromotionById(Long id) {
         String sql = "SELECT * FROM promotions WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -61,7 +61,7 @@ public class PromotionDaoImpl implements PromotionDao {
     public boolean updatePromotion(PromotionEntity promotion) {
         String sql = "UPDATE promotions SET name = ?, description = ?, type = ?, discount = ?, min_purchase = ?, start_time = ?, end_time = ?, is_active = ? WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, promotion.getName());
@@ -85,7 +85,7 @@ public class PromotionDaoImpl implements PromotionDao {
     public boolean deletePromotion(Long id) {
         String sql = "DELETE FROM promotions WHERE id = ?";
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setLong(1, id);
@@ -111,7 +111,7 @@ public class PromotionDaoImpl implements PromotionDao {
     private List<PromotionEntity> getPromotionsBySql(String sql) {
         List<PromotionEntity> promotions = new ArrayList<>();
         
-        try (Connection conn = DBUtils.getConnection();
+        try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             

@@ -2,11 +2,13 @@ package cn.javat.javaLearn.experiment4.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.text.SimpleDateFormat;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class OrderEntity {
     private long orderId;
     private long userId;

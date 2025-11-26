@@ -6,9 +6,7 @@ import java.util.ArrayList;
 
 /**
  * 用户控制器接口
- * <p>
  * 定义用户相关操作的接口，用于处理用户身份验证、用户信息管理等逻辑
- * </p>
  */
 public interface UserController {
 
